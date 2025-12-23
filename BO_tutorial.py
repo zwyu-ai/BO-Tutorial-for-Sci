@@ -46,6 +46,10 @@ class Config:
             }
         
         else:
+            print("=" * 70)
+            print(self.title)
+            print("=" * 70)
+
             design_space, oracle = self.prepare_fn()
             hebo_history, bo_history, rs_history = run_optimization(
                 space=design_space,

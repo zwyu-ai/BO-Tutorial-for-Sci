@@ -4,6 +4,7 @@ from typing import Callable
 from hebo.design_space.design_space import DesignSpace
 from hebo.optimizers.hebo import HEBO
 from hebo.optimizers.bo import BO
+from tqdm import tqdm
 
 import warnings
 
@@ -132,12 +133,12 @@ def plot_combined_optimization_results(
 
 
 def run_optimization(
-        space: DesignSpace, oracle: Callable, num_iterations: int, random_seeds: list[int], random_samples: int = 10
+        space: DesignSpace,
+        oracle: Callable,
+        num_iterations: int,
+        random_seeds: list[int],
+        random_samples: int = 10
 ):
-    print("=" * 70)
-    print("OPTIMIZATION COMPARISON: HEBO vs BO vs Random Search")
-    print("=" * 70)
-
     # ========== 1. HEBO Optimization ==========
     print("\n[1/3] Running HEBO Optimization...")
     hebo_config = {
@@ -155,7 +156,7 @@ def run_optimization(
         hebo = HEBO(space, model_name='gp', rand_sample=random_samples, model_config=hebo_config)
         hebo_trace = []
 
-        for i in range(num_iterations):
+        for i in tqdm(range(num_iterations)):
             try:
                 rec_x = hebo.suggest()
             except Exception as e:
@@ -177,7 +178,7 @@ def run_optimization(
         bo = BO(space, model_name='gp', rand_sample=random_samples)
         bo_trace = []
 
-        for i in range(num_iterations):
+        for i in tqdm(range(num_iterations)):
             try:
                 rec_x = bo.suggest()
             except Exception as e:
@@ -198,7 +199,7 @@ def run_optimization(
     for seed in random_seeds:
         np.random.seed(seed)
         rs_trace = []
-        for i in range(num_iterations):
+        for i in tqdm(range(num_iterations)):
             rec_x = space.sample(1)
             rec_y = oracle(rec_x)
             rs_trace += rec_y.flatten().tolist()

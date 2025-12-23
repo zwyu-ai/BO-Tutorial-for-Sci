@@ -9,3 +9,4 @@ GPy>=1.9.9
 catboost>=0.24.4
 disjoint-set
 HEBO==0.3.6
+tqdm
