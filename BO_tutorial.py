@@ -51,7 +51,7 @@ class Config:
                 space=design_space,
                 oracle=oracle,
                 num_iterations=self.num_iterations,
-                random_seeds=list(range(42, 42 + self.num_seeds)),
+                random_seeds=list(range(0, self.num_seeds)),
                 random_samples=self.random_samples
             )
             results = {
@@ -74,24 +74,36 @@ if __name__ == '__main__':
         Config(
             title="HER Optimization",
             prepare_fn=prepare_HER,
+            num_iterations=200,
+            num_seeds=16,
+            random_samples=20,
             result_path="results/HER_bo_results.npz",
             y_label=r"Regret ($\mathrm{yield}^* - \mathrm{yield}$)",
         ),
         Config(
             title="HEA Nanozyme Optimization",
             prepare_fn=prepare_HEA,
+            num_iterations=200,
+            num_seeds=16,
+            random_samples=20,
             result_path="results/HEA_bo_results.npz",
             y_label=r"Regret ($E^* - E$)",
         ),
         Config(
             title="OER Optimization",
             prepare_fn=partial(prepare_OER, data_path='OER/OER.csv'),
+            num_iterations=200,
+            num_seeds=16,
+            random_samples=20,
             result_path="results/OER_bo_results.npz",
             y_label="Overpotential (mV)",
         ),
         Config(
             title="BH Reaction Optimization",
             prepare_fn=prepare_BH,
+            num_iterations=200,
+            num_seeds=16,
+            random_samples=20,
             result_path="results/BH_bo_results.npz",
             y_label=r"Regret ($\mathrm{yield}^* - \mathrm{yield}$)",
         ),
