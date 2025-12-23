@@ -14,7 +14,8 @@ def get_preprocessed_data(data_path: str = 'BH/BH_dataset.csv') -> pd.DataFrame:
 def get_design_space(data_df: pd.DataFrame) -> DesignSpace:
     params_columns = data_df.columns.tolist()
     for p in ['yield', 'cost', 'new_index']:
-        params_columns.remove(p)
+        if p in params_columns:
+            params_columns.remove(p)
 
     space = DesignSpace().parse([
         {'name': p, 'type': 'num', 'lb': data_df[p].min(), 'ub': data_df[p].max()} for p in params_columns
@@ -39,3 +40,11 @@ def construct_oracle(
         return lambda x: model.predict(x).reshape(-1, 1)
     else:
         raise ValueError(f"Unsupported implementation: {impl}")
+
+
+def prepare(data_path: str = 'BH/BH_dataset.csv',
+            oracle_impl: str = "random_forest"):
+    data = get_preprocessed_data(data_path)
+    oracle = construct_oracle(data, impl=oracle_impl)
+    design_space = get_design_space(data)
+    return design_space, oracle

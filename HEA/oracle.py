@@ -1,13 +1,14 @@
 from autogluon.tabular import TabularPredictor
 from autogluon.tabular import TabularDataset
 import pandas as pd
+import numpy as np
 
 
 class ObjectiveWrapper:
 
     def __init__(self, black_box_function,
-                 input_length: int = None,
-                 input_columns: list = None,
+                 input_length: int | None = None,
+                 input_columns: list | None = None,
                  input_list=False):
 
         self.black_box_function = black_box_function
@@ -15,6 +16,7 @@ class ObjectiveWrapper:
 
         if input_columns is None:
             input_columns = []
+            assert input_length is not None
             for i in range(input_length):
                 input_columns.append('x'+str(i))
 
@@ -58,18 +60,13 @@ def train_model():
     return predictor
 
 
-def get_model():
-    model_dir = './AutogluonModels/ag-20251209_102532'
-    return TabularPredictor.load(model_dir)
-
-
 class Oracle:
-    def __init__(self):
-        self.model = get_model()
+    def __init__(self, model_dir: str):
+        self.model = TabularPredictor.load(model_dir)
 
-    def __call__(self, x):
-        return self.model.predict(x)
-
+    def __call__(self, x: pd.DataFrame):
+        y = self.model.predict(x)
+        return np.asarray(y)
 
 if __name__ == "__main__":
     train_model()

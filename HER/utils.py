@@ -42,3 +42,10 @@ def construct_oracle(data_df: pd.DataFrame, impl: str = "random_forest") -> Call
         return lambda x: model.predict(x).reshape(-1, 1)
     else:
         raise ValueError(f"Unsupported implementation: {impl}")
+
+
+def prepare(data_path: str = 'HER/HER_virtual_data.csv', oracle_impl: str = "random_forest"):
+    data = get_preprocessed_data(data_path)
+    oracle = construct_oracle(data, impl=oracle_impl)
+    design_space = get_design_space()
+    return design_space, oracle

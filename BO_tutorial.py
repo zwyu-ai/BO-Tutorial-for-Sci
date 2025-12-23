@@ -1,98 +1,112 @@
-from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
 import warnings
+import dataclasses as dc
+import os
 
+from functools import partial
 from utils import run_optimization, plot_combined_optimization_results
-from OER.utils import get_preprocessed_data as get_preprocessed_data_OER
-from OER.utils import get_design_space as get_design_space_OER
-from OER.utils import construct_oracle as construct_oracle_OER
-from HER.utils import get_preprocessed_data as get_preprocessed_data_HER
-from HER.utils import get_design_space as get_design_space_HER
-from HER.utils import construct_oracle as construct_oracle_HER
-from BH.utils import get_preprocessed_data as get_preprocessed_data_BH
-from BH.utils import get_design_space as get_design_space_BH
-from BH.utils import construct_oracle as construct_oracle_BH
+from typing import Callable
+from hebo.design_space.design_space import DesignSpace
+
+from OER.utils import prepare as prepare_OER
+from HER.utils import prepare as prepare_HER
+from BH.utils import prepare as prepare_BH
+from HEA.utils import prepare as prepare_HEA
+
+type OracleFn = Callable[[pd.DataFrame], np.ndarray]
+type PrepareFn = Callable[..., tuple[DesignSpace, OracleFn]]
+
 
 warnings.filterwarnings("ignore")
 
+
+@dc.dataclass
+class Config:
+    title: str
+    prepare_fn: PrepareFn
+    num_iterations: int = 100
+    num_seeds: int = 1
+    random_samples: int = 10
+    y_label: str = "y"
+    result_path: str | None = None
+    
+    def run(self, ignore_if_exists: bool = False):
+        results: dict[str, np.ndarray]
+        
+        if ignore_if_exists and self.result_path is not None and os.path.exists(self.result_path):
+            print(f"✓ Result file {self.result_path} exists, skipping...")
+            # load and return
+            loaded = np.load(self.result_path, allow_pickle=True)
+            # ensure that loaded is a dict and has desired keys
+            results = {
+                'HEBO': loaded['HEBO'],
+                'BO (LCB)': loaded['BO (LCB)'],
+                'Random Search': loaded['Random Search']
+            }
+        
+        else:
+            design_space, oracle = self.prepare_fn()
+            hebo_history, bo_history, rs_history = run_optimization(
+                space=design_space,
+                oracle=oracle,
+                num_iterations=self.num_iterations,
+                random_seeds=list(range(42, 42 + self.num_seeds)),
+                random_samples=self.random_samples
+            )
+            results = {
+                'HEBO': hebo_history,
+                'BO (LCB)': bo_history,
+                'Random Search': rs_history
+            }
+
+            if self.result_path is not None:
+                # make parent
+                os.makedirs(os.path.dirname(self.result_path), exist_ok=True)
+                np.savez(self.result_path, **results)
+
+        return results
+
+
+
 if __name__ == '__main__':
-    NUM_ITERATIONS = 100
-    NUM_SEEDS = 16
-    RANDOM_SAMPLES = 10
+    configs = [
+        Config(
+            title="HER Optimization",
+            prepare_fn=prepare_HER,
+            result_path="results/HER_bo_results.npz",
+            y_label=r"Regret ($\mathrm{yield}^* - \mathrm{yield}$)",
+        ),
+        Config(
+            title="HEA Nanozyme Optimization",
+            prepare_fn=prepare_HEA,
+            result_path="results/HEA_bo_results.npz",
+            y_label=r"Regret ($E^* - E$)",
+        ),
+        Config(
+            title="OER Optimization",
+            prepare_fn=partial(prepare_OER, data_path='OER/OER.csv'),
+            result_path="results/OER_bo_results.npz",
+            y_label="Overpotential (mV)",
+        ),
+        Config(
+            title="BH Reaction Optimization",
+            prepare_fn=prepare_BH,
+            result_path="results/BH_bo_results.npz",
+            y_label=r"Regret ($\mathrm{yield}^* - \mathrm{yield}$)",
+        ),
+    ]
 
-    # OER
-    OER_data, categorical_feat, numerical_feat, target_col = get_preprocessed_data_OER(data_path="OER/OER_clean.csv")
-    OER_design_space = get_design_space_OER(data_df=OER_data, categorical_features=categorical_feat)
-    # Prepare Data for Oracle
-    X = OER_data[categorical_feat + numerical_feat].copy()
-    y = OER_data[target_col].values.reshape(-1, 1)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-    OER_oracle = construct_oracle_OER(
-        X_train, y_train,
-        categorical_feat,
-        impl="random_forest",
-        validate=True
-    )
-    hebo_history, bo_history, rs_history = run_optimization(
-        space=OER_design_space,
-        oracle=OER_oracle,
-        num_iterations=NUM_ITERATIONS,
-        random_seeds=list(range(42, 42 + NUM_SEEDS)),
-        random_samples=RANDOM_SAMPLES
-    )
-    OER_results = {
-        'HEBO': hebo_history,
-        'BO (LCB)': bo_history,
-        'Random Search': rs_history
-    }
+    results: dict[str, dict[str, np.ndarray]] = {}
 
-    # HER
-    HER_data = get_preprocessed_data_HER(data_path='HER/HER_virtual_data.csv')
-    HER_space = get_design_space_HER()
-    HER_oracle = construct_oracle_HER(data_df=HER_data, impl="random_forest")
-    hebo_history, bo_history, rs_history = run_optimization(
-        space=HER_space,
-        oracle=HER_oracle,
-        num_iterations=NUM_ITERATIONS,
-        random_seeds=list(range(42, 42 + NUM_SEEDS)),
-        random_samples=RANDOM_SAMPLES
-    )
-    HER_results = {
-        'HEBO': hebo_history,
-        'BO (LCB)': bo_history,
-        'Random Search': rs_history
-    }
-
-    # BH
-    BH_data = get_preprocessed_data_BH(data_path='BH/BH_dataset.csv')
-    BH_space = get_design_space_BH(data_df=BH_data)
-    BH_oracle = construct_oracle_BH(data_df=BH_data, impl="random_forest")
-    hebo_history, bo_history, rs_history = run_optimization(
-        space=BH_space,
-        oracle=BH_oracle,
-        num_iterations=NUM_ITERATIONS,
-        random_seeds=list(range(42, 42 + NUM_SEEDS)),
-        random_samples=RANDOM_SAMPLES
-    )
-    BH_results = {
-        'HEBO': hebo_history,
-        'BO (LCB)': bo_history,
-        'Random Search': rs_history
-    }
+    for config in configs:
+        print(f"\n[Running BO for {config.title}]")
+        results[config.title] = config.run(ignore_if_exists=True)
 
     # Plot all
-    results_list = [OER_results, HER_results, BH_results]
-    titles = [
-        "OER Catalyst Optimization",
-        "HER Optimization",
-        "BH Optimization"
-    ]
-    ylabels = [
-        "Overpotential (mV)",
-        "Regret ($\mathrm{yield}^* - \mathrm{yield}$)",
-        "Regret ($\mathrm{yield}^* - \mathrm{yield}$)"
-    ]
+    titles = [config.title for config in configs]
+    ylabels = [config.y_label for config in configs]
+    results_list = [results[title] for title in titles]
     plot_combined_optimization_results(
         results_list,
         titles,

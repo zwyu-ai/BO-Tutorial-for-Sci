@@ -17,7 +17,7 @@ def plot_regret(
         ylabel="Best Value Found",
         show_points=False,
         point_alpha=0.15,
-        fig_path: str = None
+        fig_path: str | None = None
 ):
     """
     Plots the mean cumulative minimum and standard error, with optional scatter
@@ -68,10 +68,6 @@ def plot_regret(
         print(f"✓ Plot saved to {fig_path}")
 
     plt.show()
-
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 def plot_combined_optimization_results(
@@ -160,7 +156,11 @@ def run_optimization(
         hebo_trace = []
 
         for i in range(num_iterations):
-            rec_x = hebo.suggest()
+            try:
+                rec_x = hebo.suggest()
+            except Exception as e:
+                print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Abort")
+                break
             rec_y = oracle(rec_x)
             hebo_trace += rec_y.flatten().tolist()
             hebo.observe(rec_x, rec_y)
@@ -178,7 +178,11 @@ def run_optimization(
         bo_trace = []
 
         for i in range(num_iterations):
-            rec_x = bo.suggest()
+            try:
+                rec_x = bo.suggest()
+            except Exception as e:
+                print(f"⚠️ BO suggest() failed at iteration {i} with error: {e}. Abort")
+                break
             rec_y = oracle(rec_x)
             bo_trace += rec_y.flatten().tolist()
             bo.observe(rec_x, rec_y)

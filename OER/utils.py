@@ -5,7 +5,7 @@ import pandas as pd
 from hebo.design_space.design_space import DesignSpace
 
 
-def get_preprocessed_data(data_path: str = 'OER/OER_clean.csv') -> [pd.DataFrame, list[str], list[str], str]:
+def get_preprocessed_data(data_path: str = 'OER/OER_clean.csv') -> tuple[pd.DataFrame, list[str], list[str], str]:
     """
     Returns
         clean pd.DataFrame
@@ -195,3 +195,24 @@ def construct_oracle(
         return model.predict(x_enc).reshape(-1, 1)
 
     return oracle_func
+
+
+def prepare(data_path: str = "OER/OER_clean.csv", 
+            oracle_impl: str = "random_forest"):
+    from sklearn.model_selection import train_test_split
+
+    data_df, categorical_feat, numerical_feat, target_col = get_preprocessed_data(data_path=data_path)
+    design_space = get_design_space(data_df=data_df, categorical_features=categorical_feat)
+    # Prepare Data for Oracle
+    X = data_df[categorical_feat + numerical_feat].copy()
+    y = np.asarray(data_df[target_col].values).reshape(-1, 1)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    oracle = construct_oracle(
+        X_train, y_train,
+        categorical_feat,
+        impl=oracle_impl,
+        validate=True
+    )
+    return design_space, oracle
