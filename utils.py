@@ -129,88 +129,91 @@ def plot_combined_optimization_results(
         plt.savefig(fig_path, dpi=300, bbox_inches='tight')
         print(f"✓ Combined plot saved to {fig_path}")
 
-    plt.show()
-
 
 def run_optimization(
         space: DesignSpace,
         oracle: Callable,
+        type: str,
         num_iterations: int,
         random_seeds: list[int],
         random_samples: int = 10
 ):
-    # ========== 1. HEBO Optimization ==========
-    print("\n[1/3] Running HEBO Optimization...")
-    hebo_config = {
-        'lr': 5e-3,
-        'num_epochs': 100,
-        'verbose': False,
-        'noise_lb': 1e-5,
-        'optimizer': 'lbfgs',
-        'pred_likeli': True,
-        'warp': True,
-    }
-    hebo_history = []
+    if type == 'HEBO':
+        # ========== 1. HEBO Optimization ==========
+        print("Running HEBO Optimization...")
+        hebo_config = {
+            'lr': 5e-3,
+            'num_epochs': 100,
+            'verbose': False,
+            'noise_lb': 1e-5,
+            'optimizer': 'lbfgs',
+            'pred_likeli': True,
+            'warp': True,
+        }
+        hebo_history = []
 
-    for seed in random_seeds:
-        hebo = HEBO(space, model_name='gp', rand_sample=random_samples, model_config=hebo_config)
-        hebo_trace = []
+        for seed in random_seeds:
+            hebo = HEBO(space, model_name='gp', rand_sample=random_samples, model_config=hebo_config)
+            hebo_trace = []
 
-        for i in tqdm(range(num_iterations)):
-            try:
-                rec_x = hebo.suggest()
-            except Exception as e:
-                print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Abort")
-                break
-            rec_y = oracle(rec_x)
-            hebo_trace += rec_y.flatten().tolist()
-            hebo.observe(rec_x, rec_y)
-            best_y = hebo.y.min()
+            for i in tqdm(range(num_iterations)):
+                try:
+                    rec_x = hebo.suggest()
+                except Exception as e:
+                    print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Abort")
+                    break
+                rec_y = oracle(rec_x)
+                hebo_trace += rec_y.flatten().tolist()
+                hebo.observe(rec_x, rec_y)
+                best_y = hebo.y.min()
 
-        hebo_history.append(hebo_trace)
-        print(f"✓ HEBO seed {seed} completed. Final best: {hebo.y.min():.2f}")
+            hebo_history.append(hebo_trace)
+            print(f"✓ HEBO seed {seed} completed. Final best: {hebo.y.min():.2f}")
 
-    # ========== 2. Basic BO with LCB ==========
-    print("\n[2/3] Running Basic BO (LCB)...")
-    bo_history = []
+        history = np.array(hebo_history)
 
-    for seed in random_seeds:
-        bo = BO(space, model_name='gp', rand_sample=random_samples)
-        bo_trace = []
+    elif type == 'BO (LCB)':
+        # ========== 2. Basic BO with LCB ==========
+        print("Running Basic BO (LCB)...")
+        bo_history = []
 
-        for i in tqdm(range(num_iterations)):
-            try:
-                rec_x = bo.suggest()
-            except Exception as e:
-                print(f"⚠️ BO suggest() failed at iteration {i} with error: {e}. Abort")
-                break
-            rec_y = oracle(rec_x)
-            bo_trace += rec_y.flatten().tolist()
-            bo.observe(rec_x, rec_y)
-            best_y = bo.y.min()
+        for seed in random_seeds:
+            bo = BO(space, model_name='gp', rand_sample=random_samples)
+            bo_trace = []
 
-        bo_history.append(bo_trace)
-        print(f"✓ BO seed {seed} completed. Final best: {bo.y.min():.2f}")
+            for i in tqdm(range(num_iterations)):
+                try:
+                    rec_x = bo.suggest()
+                except Exception as e:
+                    print(f"⚠️ BO suggest() failed at iteration {i} with error: {e}. Abort")
+                    break
+                rec_y = oracle(rec_x)
+                bo_trace += rec_y.flatten().tolist()
+                bo.observe(rec_x, rec_y)
+                best_y = bo.y.min()
 
-    # ========== 3. Random Search ==========
-    print("\n[3/3] Running Random Search...")
-    rs_history = []
+            bo_history.append(bo_trace)
+            print(f"✓ BO seed {seed} completed. Final best: {bo.y.min():.2f}")
 
-    for seed in random_seeds:
-        np.random.seed(seed)
-        rs_trace = []
-        for i in tqdm(range(num_iterations)):
-            rec_x = space.sample(1)
-            rec_y = oracle(rec_x)
-            rs_trace += rec_y.flatten().tolist()
-            best_y = min(rs_trace)
+        history = np.array(bo_history)
 
-        rs_history.append(rs_trace)
-        print(f"✓ Random Search seed {seed} completed. Final best: {min(rs_trace):.2f}")
+    elif type == 'Random Search':
+        # ========== 3. Random Search ==========
+        print("Running Random Search...")
+        rs_history = []
 
-    # ========== Results Summary ==========
-    hebo_history = np.array(hebo_history)
-    bo_history = np.array(bo_history)
-    rs_history = np.array(rs_history)
+        for seed in random_seeds:
+            np.random.seed(seed)
+            rs_trace = []
+            for i in tqdm(range(num_iterations)):
+                rec_x = space.sample(1)
+                rec_y = oracle(rec_x)
+                rs_trace += rec_y.flatten().tolist()
+                best_y = min(rs_trace)
 
-    return hebo_history, bo_history, rs_history
+            rs_history.append(rs_trace)
+            print(f"✓ Random Search seed {seed} completed. Final best: {min(rs_trace):.2f}")
+
+        history = np.array(rs_history)
+
+    return history
