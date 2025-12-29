@@ -15,10 +15,17 @@ uv pip install -r requirements.txt
 # Run
 
 ```shell
-python3 BO_tutorial.py
+python3 BO_tutorial.py --optimizer=<all|hebo|bo|rs> --dataset=<all|her|hea|oer|bh>
 ```
 
-# Contribute
+# Results
 
-To add new datasets (e.g. HEA), create functions inside `HEA/utils.py` similar to the ones in other dataset directories.
-Add them to the BO_tutorial.py script and to the final plot.
+Note that for the BH results in particular, BO barely runs correctly but produces poor results compared to random
+search. HEBO does not work and creates `nan`s which are caught but in order to not crash the run, a random point is
+suggested in place of the point that would normally be suggested by HEBO. So this is why the results look similar to
+random search for that task, it is because for all seeds of HEBO, most points are actually suggested randomly (so the
+final plot can be generated). This can be explained by the extreme high dimensionality of the input features.
+
+On the three other datasets however, HEBO outperforms the other baselines.
+
+![plot](./combined_bo_results.png)

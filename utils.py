@@ -160,8 +160,8 @@ def run_optimization(
                 try:
                     rec_x = hebo.suggest()
                 except Exception as e:
-                    print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Abort")
-                    break
+                    print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Suggesting a random sample.")
+                    rec_x = hebo.quasi_sample(1)
                 rec_y = oracle(rec_x)
                 hebo_trace += rec_y.flatten().tolist()
                 hebo.observe(rec_x, rec_y)

@@ -146,5 +146,5 @@ if __name__ == '__main__':
             results_list,
             titles,
             ylabels,
-            fig_path="combined_bo_results.pdf"
+            fig_path="combined_bo_results.png"
         )
