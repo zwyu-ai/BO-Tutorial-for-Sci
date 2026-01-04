@@ -104,7 +104,10 @@ if __name__ == '__main__':
         ),
         Config(
             title="BH Reaction Optimization",
-            prepare_fn=prepare_BH,
+            prepare_fn=partial(prepare_BH,
+                               feature_selector="random_forest",
+                               min_imp=0.01, 
+                               max_cum_imp=0.8),
             num_iterations=200,
             num_seeds=16,
             random_samples=20,
