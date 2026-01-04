@@ -87,6 +87,9 @@ def plot_combined_optimization_results(
     fig, axes = plt.subplots(1, len(results_list), figsize=(6 * len(results_list), 6), sharex=False)
     colors = ['#2E86AB', '#A23B72', '#F18F01', '#454645']
 
+    if len(results_list) == 1:
+        axes = [axes]  # Make it iterable
+
     for i, (methods_data, title, ylabel) in enumerate(zip(results_list, titles, ylabels)):
         ax = axes[i]
 
