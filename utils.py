@@ -118,13 +118,13 @@ def plot_combined_optimization_results(
             ax.fill_between(iters, mean_cum - std_err, mean_cum + std_err, color=color, alpha=0.2)
 
         # Formatting each subplot
-        ax.set_title(title, fontsize=13, fontweight='bold', pad=10)
-        ax.set_xlabel("Iteration", fontsize=11, fontweight='bold')
-        ax.set_ylabel(ylabel, fontsize=11, fontweight='bold')
+        ax.set_title(title, fontsize=16, fontweight='bold', pad=10)
+        ax.set_xlabel("Iteration", fontsize=14, fontweight='bold')
+        ax.set_ylabel(ylabel, fontsize=14, fontweight='bold')
         ax.grid(True, alpha=0.3, linestyle='--')
 
         # Add legend to each subplot or just the last one
-        ax.legend(loc='upper right', frameon=True, shadow=True, fontsize='small')
+        ax.legend(loc='upper right', frameon=True, shadow=True, fontsize=14)
 
     plt.tight_layout()
 
