@@ -166,10 +166,7 @@ def _wrap_raw_oracle(oracle: Callable[[pd.DataFrame], np.ndarray],
     return design_oracle
 
 
-def construct_oracle(
-    data_path="HEA/data/oracle_data.xlsx",
-    impl: str = "random_forest"
-) -> Callable[[pd.DataFrame], np.ndarray]:
+def construct_oracle(data_path: str, impl: str = "random_forest") -> Callable[[pd.DataFrame], np.ndarray]:
     data = pd.read_excel(data_path)
     data = data[['Co', 'Fe', 'Mn', 'V', 'Cu', 'target']]
     max_target = float(data['target'].max())
@@ -190,7 +187,7 @@ def construct_oracle(
 
 
 def prepare(
-    data_path: str = "HEA/data/oracle_data.xlsx",
+    data_path: str = "example/HEA/data/oracle_data.xlsx",
     oracle_impl: str = "random_forest"
 ):
     oracle = construct_oracle(data_path, impl=oracle_impl)

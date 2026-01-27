@@ -100,7 +100,7 @@ def construct_oracle(
 
 
 def prepare(
-    data_path: str = 'BH/BH_dataset.csv',
+    data_path: str = 'examples/BH/BH_dataset.csv',
     oracle_impl: str = "random_forest",
     feature_selector: str | None = None,
     max_n: int = -1,

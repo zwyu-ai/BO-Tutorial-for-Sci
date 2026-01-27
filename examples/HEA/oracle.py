@@ -48,7 +48,7 @@ class ObjectiveWrapper:
 
 
 def get_data():
-    data = pd.read_excel('./data/oracle_data.xlsx')
+    data = pd.read_excel('examples/HEA/data/oracle_data.xlsx')
     data = data[['Co', 'Fe', 'Mn', 'V', 'Cu', 'target']]
     return data
 
