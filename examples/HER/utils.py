@@ -5,7 +5,7 @@ import pandas as pd
 from hebo.design_space.design_space import DesignSpace
 
 
-def get_preprocessed_data(data_path: str = 'examples/HER/HER_virtual_data.csv') -> pd.DataFrame:
+def get_preprocessed_data(data_path: str) -> pd.DataFrame:
     data = pd.read_csv(data_path)
     data["Target"] = data["Target"].max() - data["Target"]
     return data
@@ -43,7 +43,7 @@ def construct_oracle(data_df: pd.DataFrame, impl: str = "random_forest") -> Call
         raise ValueError(f"Unsupported implementation: {impl}")
 
 
-def prepare(
+def create_problem(
     data_path: str = 'examples/HER/HER_virtual_data.csv',
     oracle_impl: str = "random_forest"
 ):

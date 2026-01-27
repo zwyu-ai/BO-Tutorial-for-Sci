@@ -9,13 +9,13 @@ from utils import run_optimization, plot_combined_optimization_results
 from typing import Callable
 from hebo.design_space.design_space import DesignSpace
 
-from datasets.OER.utils import prepare as prepare_OER
-from datasets.HER.utils import prepare as prepare_HER
-from datasets.BH.utils import prepare as prepare_BH
-from datasets.HEA.utils import prepare as prepare_HEA
+from examples.OER.utils import create_problem as create_problem_OER
+from examples.HER.utils import create_problem as create_problem_HER
+from examples.BH.utils import create_problem as create_problem_BH
+from examples.HEA.utils import create_problem as create_problem_HEA
 
 type OracleFn = Callable[[pd.DataFrame], np.ndarray]
-type PrepareFn = Callable[..., tuple[DesignSpace, OracleFn]]
+type ProblemFn = Callable[..., tuple[DesignSpace, OracleFn]]
 
 
 warnings.filterwarnings("ignore")
@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 @dc.dataclass
 class Config:
     title: str
-    prepare_fn: PrepareFn
+    problem: ProblemFn
     num_iterations: int = 100
     num_seeds: int = 1
     random_samples: int = 10
@@ -50,7 +50,7 @@ class Config:
             print(self.title)
             print("=" * 70)
 
-            design_space, oracle = self.prepare_fn()
+            design_space, oracle = self.problem()
             hebo_history, bo_history, rs_history = run_optimization(
                 space=design_space,
                 oracle=oracle,
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     configs = [
         Config(
             title="HER Optimization",
-            prepare_fn=prepare_HER,
+            problem=create_problem_HER,
             num_iterations=200,
             num_seeds=16,
             random_samples=20,
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         ),
         Config(
             title="HEA Nanozyme Optimization",
-            prepare_fn=prepare_HEA,
+            problem=create_problem_HEA,
             num_iterations=200,
             num_seeds=16,
             random_samples=20,
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         ),
         Config(
             title="OER Optimization",
-            prepare_fn=partial(prepare_OER, data_path='OER/OER.csv'),
+            problem=partial(create_problem_OER, data_path='examples/OER/OER.csv'),
             num_iterations=200,
             num_seeds=16,
             random_samples=20,
@@ -104,11 +104,11 @@ if __name__ == '__main__':
         ),
         Config(
             title="BH Reaction Optimization",
-            prepare_fn=partial(prepare_BH,
-                               feature_selector="random_forest",
-                               min_imp=0.01, 
-                               max_cum_imp=0.8,
-                               max_n=20),
+            problem=partial(create_problem_BH,
+                            feature_selector="random_forest",
+                            min_imp=0.01, 
+                            max_cum_imp=0.8,
+                            max_n=20),
             num_iterations=200,
             num_seeds=16,
             random_samples=20,

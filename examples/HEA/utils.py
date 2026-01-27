@@ -186,7 +186,7 @@ def construct_oracle(data_path: str, impl: str = "random_forest") -> Callable[[p
         raise ValueError(f"Unknown implementation: {impl}")
 
 
-def prepare(
+def create_problem(
     data_path: str = "example/HEA/data/oracle_data.xlsx",
     oracle_impl: str = "random_forest"
 ):

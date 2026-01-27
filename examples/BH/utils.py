@@ -99,7 +99,7 @@ def construct_oracle(
         raise ValueError(f"Unsupported implementation: {impl}")
 
 
-def prepare(
+def create_problem(
     data_path: str = 'examples/BH/BH_dataset.csv',
     oracle_impl: str = "random_forest",
     feature_selector: str | None = None,
