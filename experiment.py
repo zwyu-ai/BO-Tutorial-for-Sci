@@ -67,7 +67,7 @@ class Config:
             if self.result_path is not None:
                 # make parent
                 os.makedirs(os.path.dirname(self.result_path), exist_ok=True)
-                np.savez(self.result_path, **results)
+                np.savez(self.result_path, allow_pickle=True, **results)
 
         return results
 
