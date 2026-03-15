@@ -57,6 +57,7 @@ This section points you to the most relevant files depending on what you are loo
   - **HEA nanozyme optimisation** – high‑entropy alloy catalysts
   - **OER optimisation** – oxygen evolution reaction
   - **BH reaction optimisation** – organic synthesis (Buchwald–Hartwig coupling)
+   - **Molecule optimisation** – molecular design over a SMILES library (QED objective). See `molecule.ipynb` and `examples/Molecule/utils.py` for a worked example.
 
   The script produces per‑task result files (e.g. `results/BH_bo_results.npz`) and a combined comparison plot saved as `results/combined_bo_results.pdf`.
 
@@ -89,6 +90,11 @@ These modules expose `create_problem_*` functions (e.g. `create_problem_HER`, `c
 
 This is a good starting point if you want to see HEBO “out of the box” before looking at the full experimental benchmarks.
 
+- [molecule.ipynb](molecule.ipynb)  
+   Notebook demonstrating molecular optimisation over a SMILES library: it shows how to
+   define a categorical design space of molecules (SMILES), use an RDKit‑based QED oracle,
+   and run HEBO / basic BO vs random search. The helper utilities live in [examples/Molecule](examples/Molecule).
+
 ### 3. BO Building Blocks: Gaussian Processes and Acquisition Functions
 
 For readers interested in the mathematical and implementation details of BO’s core components, the `coding_illustrations/` folder provides minimal, didactic implementations.
@@ -108,15 +114,15 @@ For readers interested in the mathematical and implementation details of BO’s 
 
 These notebooks are ideal if you want to understand “what BO is doing under the hood” rather than just calling a high‑level optimiser.
 
-### 4. Data and Pre‑trained Models
+### 4. Datasets for Scientific Discovery
+
+Simple datasets have been included to create objective oracles and specify optimisation problems for scientific discovery.
 
 - [examples/BH/BH_dataset.csv](examples/BH/BH_dataset.csv) – Buchwald–Hartwig reaction dataset
 - [examples/HER/HER_virtual_data.csv](examples/HER/HER_virtual_data.csv) – virtual HER data
 - [examples/OER/OER.csv](examples/OER/OER.csv) and [examples/OER/OER_clean.csv](examples/OER/OER_clean.csv) – OER datasets
 - [examples/HEA/data](examples/HEA/data) – HEA nanozyme data used by the HEA oracle
-
-- [examples/HEA/AutogluonModels](examples/HEA/AutogluonModels)  
-  Contains an AutoGluon model directory used by the HEA oracle. This allows BO to query a pre‑trained predictive model as an “in‑silico experiment”. You do not normally need to modify these files unless you are retraining or replacing the underlying model.
+ - [examples/Molecule/zinc.txt.gz](examples/Molecule/zinc.txt.gz) – compressed ZINC SMILES list used by the Molecule example
 
 ### 5. Results
 
@@ -133,14 +139,25 @@ You can safely delete these files if you want to rerun all experiments from scra
 
 This project targets Python 3.9+ and relies on standard scientific Python packages plus HEBO and (for some notebooks) PyTorch, Gpytorch, scikit‑learn, and AutoGluon.
 
-1. (Recommended) Create and activate a virtual environment.
+1. (Recommended) Create and activate a virtual environment. We recommend using `uv`:
+   
+   ```bash
+   uv venv --python 3.XX
+   .venv/Scripts/activate  # activate the virtual environment
+   ```
+
 2. Install base dependencies:
 
    ```bash
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
    ```
-
-3. For the Jupyter notebooks, ensure you also have Jupyter installed, and, if needed, additional packages such as `torch`, `gpytorch`, and `scikit-learn` (see the first cell of `HEBO_tutorial.ipynb` for example `pip install` commands).
+3. Install HEBO:
+   
+   ```bash
+   uv pip install hebo
+   ```
+  
+  Some may encounter issues when installing one of the dependencies `Gpy` that is required by HEBO but not necessarily needed in HEBO. To bypass, add `--no-deps`.
 
 ### How to Reproduce the Case Studies
 
@@ -156,6 +173,9 @@ This project targets Python 3.9+ and relies on standard scientific Python packag
 3. Inspect the saved results in the `results/` directory and the generated combined comparison figure.
 
 For deeper exploration, open the notebooks in `HEBO_tutorial.ipynb` and `coding_illustrations/` and execute them cell‑by‑cell.
+
+**Note for Molecule Optimisation:**
+The repository also contains a Molecule example (molecular optimisation) in `molecule.ipynb` and `examples/Molecule`. This example is intentionally provided as a standalone demo: it defines a categorical design space over SMILES strings and uses an RDKit‑based QED oracle. Treating SMILES as raw categorical strings requires custom feature/descriptor layers (mapping molecules to numeric representations) before a GP surrogate can be applied; for this reason the Molecule example is not included in the main `experiment.py` runner and is aimed at experienced users who want to extend the tutorial. Advanced users can adapt the example by computing molecular descriptors or fingerprints and converting the design space to numeric features suitable for HEBO or other GP‑based surrogates. The Molecule utilities use RDKit (declared in `requirements.txt`) and a ZINC SMILES archive at `examples/Molecule/zinc.txt.gz`.
 
 ### Who Is This Repository For?
 

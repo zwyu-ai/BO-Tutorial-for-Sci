@@ -164,7 +164,8 @@ def run_optimization(
                 rec_x = hebo.suggest()
             except Exception as e:
                 print(f"⚠️ HEBO suggest() failed at iteration {i} with error: {e}. Abort")
-                break
+                raise  # change to `break` if you want to continue with other seeds instead of aborting all
+                # break
             rec_y = oracle(rec_x)
             hebo_trace += rec_y.flatten().tolist()
             hebo.observe(rec_x, rec_y)

@@ -178,10 +178,6 @@ def construct_oracle(data_path: str, impl: str = "random_forest") -> Callable[[p
         target = data["target"]
         model.fit(features, target)
         return _wrap_raw_oracle(model.predict, max_target)
-    elif impl == "autogluon":
-        from .oracle import Oracle
-        oracle_model = Oracle(model_dir='datasets/HEA/AutogluonModels/ag-20251209_102532')
-        return _wrap_raw_oracle(oracle_model, max_target)
     else:
         raise ValueError(f"Unknown implementation: {impl}")
 

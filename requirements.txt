@@ -1,12 +1,11 @@
 numpy>=1.15
 pandas>=1.0.1
 torch>=1.9.0
-pymoo==0.6.0
+pymoo==0.6.1.6
 scipy>=1.1
 scikit-learn>=0.22
 gpytorch>=1.4.0
-GPy>=1.9.9
 catboost>=0.24.4
 disjoint-set
-HEBO==0.3.6
 tqdm
+rdkit
