@@ -187,5 +187,7 @@ The examples are deliberately designed to be readable and easily modified so you
 
 ### Citing This Tutorial
 
-If you use this material in your research, teaching, or software, please cite the associated Bayesian Optimisation tutorial (TO BE RELEASED).
+If you use this material in your research, teaching, or software, please cite the associated Bayesian Optimisation tutorial:
+
+Zhongwei Yu, *et al.* Efficient and Principled Scientific Discovery through Bayesian Optimization: A Tutorial. url: https://arxiv.org/abs/2604.01328
 
