@@ -157,7 +157,7 @@ This project targets Python 3.9+ and relies on standard scientific Python packag
    uv pip install hebo
    ```
   
-  Some may encounter issues when installing one of the dependencies `Gpy` that is required by HEBO but not necessarily needed in HEBO. To bypass, add `--no-deps`.
+  Some may encounter issues when installing one of the dependencies `Gpy`. This is not necessarily needed in HEBO if you use the default GP implementation, which is based on GpyTorch. To bypass, add `--no-deps`.
 
 ### How to Reproduce the Case Studies
 
